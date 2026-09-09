@@ -1,0 +1,677 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<title>Voz Check</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F4F5F1;
+    --bg-elev: #FFFFFF;
+    --bg-well: #E9EBE5;
+    --text: #1B2328;
+    --text-dim: #5B6B64;
+    --border: #DBDFD7;
+    --accent: #A8641E;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #F1E2CE;
+    --good: #2E7D4F;
+    --good-soft: #DFF0E5;
+    --bad: #B23A2E;
+    --bad-soft: #F6E1DD;
+    --focus: #2E7D4F;
+    --shadow: rgba(27, 35, 40, 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181C;
+      --bg-elev: #1B2328;
+      --bg-well: #182024;
+      --text: #E7EDE9;
+      --text-dim: #93A29B;
+      --border: #2A3339;
+      --accent: #E8A33D;
+      --accent-ink: #1B1204;
+      --accent-soft: #3A2E17;
+      --good: #4FAE7C;
+      --good-soft: #1C3327;
+      --bad: #E08578;
+      --bad-soft: #3B2320;
+      --focus: #E8A33D;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12181C;
+    --bg-elev: #1B2328;
+    --bg-well: #182024;
+    --text: #E7EDE9;
+    --text-dim: #93A29B;
+    --border: #2A3339;
+    --accent: #E8A33D;
+    --accent-ink: #1B1204;
+    --accent-soft: #3A2E17;
+    --good: #4FAE7C;
+    --good-soft: #1C3327;
+    --bad: #E08578;
+    --bad-soft: #3B2320;
+    --focus: #E8A33D;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  ::selection { background: var(--accent-soft); }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 18px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  header.page {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  h1 {
+    font-family: "IBM Plex Sans Condensed", ui-sans-serif, sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 5vw, 1.9rem);
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    color: var(--text-dim);
+    font-size: 0.94rem;
+    max-width: 60ch;
+    margin: 2px 0 0;
+  }
+
+  .lede strong { color: var(--text); font-weight: 600; }
+
+  section {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 1px 2px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-family: "IBM Plex Sans Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  .status-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 5px 10px 5px 8px;
+    border-radius: 100px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .pill.pass { background: var(--good-soft); color: var(--good); }
+  .pill.pass .dot { background: var(--good); }
+  .pill.fail { background: var(--bad-soft); color: var(--bad); }
+  .pill.fail .dot { background: var(--bad); }
+  .pill.wait { background: var(--bg-well); color: var(--text-dim); }
+  .pill.wait .dot { background: var(--text-dim); }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  label {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  select, textarea, input[type="range"] {
+    font-family: inherit;
+    font-size: 0.92rem;
+    background: var(--bg-well);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 10px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 64px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  select:focus-visible, textarea:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .rate-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rate-row input[type="range"] { flex: 1; padding: 0; }
+
+  .rate-val {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    width: 2.6em;
+    text-align: right;
+  }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button.action {
+    font-family: "IBM Plex Sans Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 0.94rem;
+    letter-spacing: 0.01em;
+    padding: 10px 18px;
+    border-radius: 7px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+    cursor: pointer;
+    transition: filter 0.12s ease, transform 0.05s ease;
+  }
+
+  button.action:hover { filter: brightness(1.06); }
+  button.action:active { transform: translateY(1px); }
+
+  button.action.secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  button.action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  button.action.listening {
+    background: var(--bad);
+    border-color: var(--bad);
+    color: #fff;
+  }
+
+  .transcript-box {
+    background: var(--bg-well);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 12px 14px;
+    min-height: 64px;
+    font-size: 0.98rem;
+  }
+
+  .transcript-box .final { color: var(--text); }
+  .transcript-box .interim { color: var(--text-dim); font-style: italic; }
+  .transcript-box .placeholder { color: var(--text-dim); font-size: 0.88rem; }
+
+  .meta-line {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.76rem;
+    color: var(--text-dim);
+  }
+
+  .log {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+  }
+
+  .log-entry {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    align-items: baseline;
+  }
+
+  .log-entry:last-child { border-bottom: none; }
+
+  .log-time {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--text-dim);
+    font-size: 0.74rem;
+  }
+
+  .log-tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .log-tag.pass { background: var(--good-soft); color: var(--good); }
+  .log-tag.fail { background: var(--bad-soft); color: var(--bad); }
+  .log-tag.info { background: var(--bg-well); color: var(--text-dim); }
+
+  .log-empty {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    padding: 6px 0;
+  }
+
+  .device-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+  }
+
+  .device-grid dt { color: var(--text-dim); }
+  .device-grid dd { margin: 0; color: var(--text); word-break: break-all; }
+
+  .copy-feedback {
+    font-size: 0.8rem;
+    color: var(--good);
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .copy-feedback.show { opacity: 1; }
+
+  footer.note {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    padding-top: 4px;
+  }
+  footer.note a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="page">
+    <div class="eyebrow">Riesgo #1 &middot; antes de construir nada más</div>
+    <h1>¿Tu teléfono entiende español?</h1>
+    <p class="lede">Abre este enlace en <strong>Safari (iPhone)</strong> y en <strong>Chrome (Android)</strong> y corre las dos pruebas de abajo. Esto decide si el reconocimiento de voz del navegador es viable para la app o si necesitamos la ruta de respaldo (Whisper por API).</p>
+  </header>
+
+  <section id="support-section">
+    <div class="section-head">
+      <h2>Soporte detectado</h2>
+    </div>
+    <div class="status-row">
+      <span class="pill wait" id="pill-recognition"><span class="dot"></span>SpeechRecognition</span>
+      <span class="pill wait" id="pill-synthesis"><span class="dot"></span>SpeechSynthesis</span>
+      <span class="pill wait" id="pill-voices"><span class="dot"></span>Voces es-*</span>
+    </div>
+    <dl class="device-grid">
+      <dt>Navegador</dt><dd id="ua-string">—</dd>
+      <dt>Plataforma</dt><dd id="platform-string">—</dd>
+      <dt>Contexto seguro</dt><dd id="secure-string">—</dd>
+    </dl>
+  </section>
+
+  <section id="listen-section">
+    <div class="section-head">
+      <h2>1 &middot; Escuchar (STT)</h2>
+    </div>
+    <div class="field">
+      <label for="lang-select">Variante</label>
+      <select id="lang-select">
+        <option value="es-ES">Español (España) — es-ES</option>
+        <option value="es-MX">Español (México) — es-MX</option>
+        <option value="es-US">Español (EE. UU.) — es-US</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="action" id="mic-btn">🎙️ Empezar a hablar</button>
+    </div>
+    <div class="transcript-box" id="transcript-box">
+      <span class="placeholder">Aquí aparecerá lo que digas, en vivo.</span>
+    </div>
+    <div class="meta-line" id="mic-meta">Sin resultados todavía.</div>
+  </section>
+
+  <section id="speak-section">
+    <div class="section-head">
+      <h2>2 &middot; Hablar (TTS)</h2>
+    </div>
+    <div class="field">
+      <label for="speak-text">Texto de prueba</label>
+      <textarea id="speak-text">Hola, ¿cómo estás? Esta es una prueba de síntesis de voz en español. Si me escuchas con claridad, esta parte funciona.</textarea>
+    </div>
+    <div class="field">
+      <label for="voice-select">Voz</label>
+      <select id="voice-select"><option value="">Cargando voces…</option></select>
+    </div>
+    <div class="field">
+      <label for="rate-range">Velocidad</label>
+      <div class="rate-row">
+        <input type="range" id="rate-range" min="0.5" max="1.5" step="0.1" value="1">
+        <span class="rate-val" id="rate-val">1.0×</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="action" id="speak-btn">▶ Reproducir</button>
+      <button class="action secondary" id="stop-btn">■ Detener</button>
+    </div>
+  </section>
+
+  <section id="log-section">
+    <div class="section-head">
+      <h2>Registro de esta sesión</h2>
+      <div class="btn-row">
+        <button class="action secondary" id="copy-btn">Copiar informe</button>
+        <span class="copy-feedback" id="copy-feedback">Copiado ✓</span>
+      </div>
+    </div>
+    <div class="log" id="log-list">
+      <div class="log-empty">Los resultados de tus pruebas aparecerán aquí.</div>
+    </div>
+  </section>
+
+  <footer class="note">
+    Prueba independiente para <strong>Real-Conversation Spanish Practice App</strong> — valida si <code>SpeechRecognition</code> / <code>SpeechSynthesis</code> nativos del navegador son suficientes antes de construir el resto de la app. Nada se envía a ningún servidor; todo corre en tu teléfono.
+  </footer>
+</div>
+
+<script>
+(function () {
+  const log = [];
+  const logList = document.getElementById('log-list');
+
+  function addLog(tag, label, detail) {
+    log.push({ time: new Date(), tag, label, detail });
+    renderLog();
+  }
+
+  function renderLog() {
+    if (!log.length) {
+      logList.innerHTML = '<div class="log-empty">Los resultados de tus pruebas aparecerán aquí.</div>';
+      return;
+    }
+    logList.innerHTML = log.slice().reverse().map(function (e) {
+      const t = e.time.toLocaleTimeString('es-ES', { hour12: false });
+      return '<div class="log-entry">' +
+        '<span class="log-time">' + t + '</span>' +
+        '<span class="log-tag ' + e.tag + '">' + e.tag.toUpperCase() + '</span>' +
+        '<span>' + e.label + (e.detail ? ' — ' + e.detail : '') + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function setPill(id, state, text) {
+    const el = document.getElementById(id);
+    el.className = 'pill ' + state;
+    el.innerHTML = '<span class="dot"></span>' + text;
+  }
+
+  // --- device info ---
+  document.getElementById('ua-string').textContent = navigator.userAgent || '—';
+  document.getElementById('platform-string').textContent = navigator.platform || '—';
+  document.getElementById('secure-string').textContent = window.isSecureContext ? 'sí (https)' : 'no — muchas APIs se bloquearán';
+
+  // --- SpeechRecognition support ---
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
+
+  if (SR) {
+    setPill('pill-recognition', 'pass', 'SpeechRecognition: sí');
+  } else {
+    setPill('pill-recognition', 'fail', 'SpeechRecognition: no');
+    addLog('fail', 'SpeechRecognition no disponible', 'este navegador no expone la API');
+  }
+
+  const micBtn = document.getElementById('mic-btn');
+  const transcriptBox = document.getElementById('transcript-box');
+  const micMeta = document.getElementById('mic-meta');
+  const langSelect = document.getElementById('lang-select');
+
+  if (!SR) {
+    micBtn.disabled = true;
+  } else {
+    micBtn.addEventListener('click', function () {
+      if (listening) {
+        recognition.stop();
+        return;
+      }
+      recognition = new SR();
+      recognition.lang = langSelect.value;
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = function () {
+        listening = true;
+        micBtn.textContent = '⏹ Escuchando… (toca para parar)';
+        micBtn.classList.add('listening');
+        transcriptBox.innerHTML = '<span class="interim">Escuchando…</span>';
+        micMeta.textContent = 'Variante: ' + langSelect.value;
+      };
+
+      recognition.onresult = function (event) {
+        let finalText = '';
+        let interimText = '';
+        for (let i = 0; i < event.results.length; i++) {
+          const r = event.results[i];
+          if (r.isFinal) finalText += r[0].transcript;
+          else interimText += r[0].transcript;
+        }
+        transcriptBox.innerHTML =
+          (finalText ? '<span class="final">' + finalText + '</span> ' : '') +
+          (interimText ? '<span class="interim">' + interimText + '</span>' : '') ||
+          '<span class="placeholder">(sin texto)</span>';
+
+        if (finalText) {
+          const conf = event.results[event.results.length - 1][0].confidence;
+          const confStr = (typeof conf === 'number' && !isNaN(conf)) ? (Math.round(conf * 100) + '%') : 'n/d';
+          micMeta.textContent = 'Última transcripción final · confianza: ' + confStr;
+          addLog('pass', 'Transcrito', '"' + finalText.trim() + '" (' + confStr + ')');
+        }
+      };
+
+      recognition.onerror = function (event) {
+        addLog('fail', 'Error de reconocimiento', event.error);
+        micMeta.textContent = 'Error: ' + event.error;
+      };
+
+      recognition.onend = function () {
+        listening = false;
+        micBtn.textContent = '🎙️ Empezar a hablar';
+        micBtn.classList.remove('listening');
+      };
+
+      try {
+        recognition.start();
+      } catch (err) {
+        addLog('fail', 'No se pudo iniciar', String(err));
+      }
+    });
+  }
+
+  // --- SpeechSynthesis support ---
+  const synth = window.speechSynthesis;
+  const voiceSelect = document.getElementById('voice-select');
+  const speakBtn = document.getElementById('speak-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  const speakText = document.getElementById('speak-text');
+  const rateRange = document.getElementById('rate-range');
+  const rateVal = document.getElementById('rate-val');
+
+  if (!synth) {
+    setPill('pill-synthesis', 'fail', 'SpeechSynthesis: no');
+    setPill('pill-voices', 'fail', 'Voces es-*: n/d');
+    speakBtn.disabled = true;
+    stopBtn.disabled = true;
+    voiceSelect.disabled = true;
+    addLog('fail', 'SpeechSynthesis no disponible', 'este navegador no expone la API');
+  } else {
+    setPill('pill-synthesis', 'pass', 'SpeechSynthesis: sí');
+
+    function populateVoices() {
+      const voices = synth.getVoices();
+      const esVoices = voices.filter(function (v) { return v.lang && v.lang.toLowerCase().indexOf('es') === 0; });
+      const list = esVoices.length ? esVoices : voices;
+
+      if (!voices.length) return; // wait for voiceschanged
+
+      voiceSelect.innerHTML = list.map(function (v, i) {
+        return '<option value="' + i + '">' + v.name + ' (' + v.lang + ')' + (v.localService ? '' : ' · red') + '</option>';
+      }).join('');
+      voiceSelect.dataset.pool = esVoices.length ? 'es' : 'all';
+      voiceSelect._voiceList = list;
+
+      if (esVoices.length) {
+        setPill('pill-voices', 'pass', 'Voces es-*: ' + esVoices.length);
+      } else {
+        setPill('pill-voices', 'fail', 'Voces es-*: 0 (mostrando todas)');
+        addLog('fail', 'Sin voces en español', 'se listan todas las voces disponibles como respaldo');
+      }
+    }
+
+    populateVoices();
+    if (synth.onvoiceschanged !== undefined) {
+      synth.addEventListener('voiceschanged', populateVoices);
+    }
+
+    rateRange.addEventListener('input', function () {
+      rateVal.textContent = parseFloat(rateRange.value).toFixed(1) + '×';
+    });
+
+    speakBtn.addEventListener('click', function () {
+      const list = voiceSelect._voiceList || [];
+      const chosen = list[parseInt(voiceSelect.value, 10)];
+      const utter = new SpeechSynthesisUtterance(speakText.value);
+      if (chosen) utter.voice = chosen;
+      utter.lang = chosen ? chosen.lang : 'es-ES';
+      utter.rate = parseFloat(rateRange.value);
+
+      utter.onstart = function () {
+        addLog('info', 'Reproduciendo', chosen ? chosen.name : 'voz por defecto');
+      };
+      utter.onerror = function (event) {
+        addLog('fail', 'Error de síntesis', event.error);
+      };
+      utter.onend = function () {
+        addLog('pass', 'Reproducción completa', '');
+      };
+
+      synth.cancel();
+      synth.speak(utter);
+    });
+
+    stopBtn.addEventListener('click', function () {
+      synth.cancel();
+    });
+  }
+
+  // --- copy report ---
+  document.getElementById('copy-btn').addEventListener('click', function () {
+    const lines = [
+      'Informe Voz Check',
+      'UA: ' + navigator.userAgent,
+      'Plataforma: ' + navigator.platform,
+      'Contexto seguro: ' + (window.isSecureContext ? 'sí' : 'no'),
+      'SpeechRecognition: ' + (SR ? 'soportado' : 'no soportado'),
+      'SpeechSynthesis: ' + (synth ? 'soportado' : 'no soportado'),
+      '',
+      'Registro:'
+    ].concat(log.map(function (e) {
+      return '[' + e.time.toLocaleTimeString('es-ES', { hour12: false }) + '] ' + e.tag.toUpperCase() + ' ' + e.label + (e.detail ? ' — ' + e.detail : '');
+    }));
+
+    const text = lines.join('\n');
+    const feedback = document.getElementById('copy-feedback');
+
+    function showFeedback() {
+      feedback.classList.add('show');
+      setTimeout(function () { feedback.classList.remove('show'); }, 1500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(showFeedback).catch(function () {
+        window.prompt('Copia manualmente:', text);
+      });
+    } else {
+      window.prompt('Copia manualmente:', text);
+    }
+  });
+})();
+</script>
+
+</body></html>

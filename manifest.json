@@ -1,0 +1,20 @@
+{
+  "name": "Práctica de Español",
+  "short_name": "Español",
+  "description": "Practica conversación en español con un compañero de IA que te corrige.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12181C",
+  "theme_color": "#A8641E",
+  "orientation": "portrait",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
