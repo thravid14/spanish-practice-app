@@ -88,16 +88,18 @@ function parseModelJson(text) {
   } catch (err) {
     // Fall back gracefully: treat the whole thing as plain reply text so a
     // malformed JSON turn doesn't crash the conversation.
-    return { reply: text.trim(), hasCorrection: false, correction: null };
+    return { reply: text.trim(), translation: '', hasCorrection: false, correction: null };
   }
 
   const reply = typeof parsed.reply === 'string' ? parsed.reply : '';
+  const translation = typeof parsed.translation === 'string' ? parsed.translation : '';
   const hasCorrection = Boolean(parsed.hasCorrection) &&
     parsed.correction &&
     (parsed.correction.originalText || parsed.correction.correctedText);
 
   return {
     reply: reply || '(el modelo no devolvió texto)',
+    translation,
     hasCorrection,
     correction: hasCorrection ? parsed.correction : null,
   };

@@ -329,6 +329,35 @@ button, input, select, textarea {
   .typing-dots span { animation: none; opacity: 0.8; }
 }
 
+/* translation chip */
+
+.translation-chip {
+  margin-top: 4px;
+  max-width: 100%;
+}
+
+.translation-chip summary {
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  list-style: none;
+}
+
+.translation-chip summary::-webkit-details-marker { display: none; }
+
+.translation-chip[open] summary { color: var(--accent); }
+
+.translation-body {
+  margin-top: 6px;
+  background: var(--bg-well);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
 /* correction chip */
 
 .correction-chip {
@@ -387,6 +416,11 @@ button, input, select, textarea {
 .correction-explanation {
   margin: 2px 0 0;
   color: var(--text-dim);
+}
+
+.correction-explanation--en {
+  font-style: italic;
+  opacity: 0.85;
 }
 
 .correction-tag {

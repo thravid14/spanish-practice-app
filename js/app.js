@@ -170,6 +170,7 @@ async function onComposerSubmit(e) {
     const aiMessage = {
       speaker: 'ai',
       text: result.reply,
+      translation: result.translation || '',
       timestamp: new Date().toISOString(),
       correction: result.hasCorrection ? result.correction : null,
     };
@@ -199,12 +200,33 @@ function appendMessageToDom(message) {
   bubble.textContent = message.text;
   wrap.appendChild(bubble);
 
+  if (message.speaker === 'ai' && message.translation) {
+    const autoOpen = activeConversation && activeConversation.difficulty === 'beginner';
+    wrap.appendChild(buildTranslationChip(message.translation, autoOpen));
+  }
+
   if (message.correction) {
     wrap.appendChild(buildCorrectionChip(message.correction));
   }
 
   els.messageList.appendChild(wrap);
   els.messageList.scrollTop = els.messageList.scrollHeight;
+}
+
+function buildTranslationChip(translation, autoOpen) {
+  const details = document.createElement('details');
+  details.className = 'translation-chip';
+  if (autoOpen) details.open = true;
+
+  const summary = document.createElement('summary');
+  summary.textContent = '🌐 Traducción / Translation';
+  details.appendChild(summary);
+
+  const body = document.createElement('div');
+  body.className = 'translation-body';
+  body.textContent = translation;
+  details.appendChild(body);
+  return details;
 }
 
 function buildCorrectionChip(correction) {
@@ -221,6 +243,7 @@ function buildCorrectionChip(correction) {
     <div class="correction-row"><span class="correction-label">Dijiste</span><span class="correction-original">${escapeHtml(correction.originalText)}</span></div>
     <div class="correction-row"><span class="correction-label">Mejor así</span><span class="correction-fixed">${escapeHtml(correction.correctedText)}</span></div>
     ${correction.explanation ? `<p class="correction-explanation">${escapeHtml(correction.explanation)}</p>` : ''}
+    ${correction.explanationEnglish ? `<p class="correction-explanation correction-explanation--en">${escapeHtml(correction.explanationEnglish)}</p>` : ''}
     ${correction.grammarTag ? `<span class="correction-tag">${escapeHtml(correction.grammarTag)}</span>` : ''}
   `;
   details.appendChild(body);
