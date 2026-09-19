@@ -109,8 +109,11 @@ function closeSettings() {
 
 function onSettingsSubmit(e) {
   e.preventDefault();
+  const newKey = els.apiKeyInput.value.trim();
   Storage.saveSettings({
-    apiKey: els.apiKeyInput.value.trim(),
+    // a different key may have access to different models, so re-detect
+    ...(newKey !== Storage.getSettings().apiKey ? { model: '' } : {}),
+    apiKey: newKey,
     difficulty: els.difficultySelect.value,
     dialect: els.dialectSelect.value,
   });
@@ -164,8 +167,9 @@ async function onComposerSubmit(e) {
   const typingEl = appendTypingIndicator();
 
   try {
-    const result = await Gemini.sendTurn(settings.apiKey, systemPrompt, historyForApi, text);
+    const result = await Gemini.sendTurn(settings.apiKey, systemPrompt, historyForApi, text, settings.model);
     typingEl.remove();
+    if (result.model !== settings.model) Storage.saveSettings({ model: result.model });
 
     const aiMessage = {
       speaker: 'ai',
