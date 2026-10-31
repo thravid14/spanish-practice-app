@@ -12,15 +12,25 @@ class GeminiError extends Error {
   }
 }
 
+const REQUEST_TIMEOUT_MS = 40000;
+
 async function postGenerate(model, apiKey, body) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     return await fetch(`${API_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new GeminiError(`Gemini (${model}) no respondió en ${REQUEST_TIMEOUT_MS / 1000} segundos.`, err);
+    }
     throw new GeminiError('No se pudo conectar con Gemini. Revisa tu conexión a internet.', err);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
