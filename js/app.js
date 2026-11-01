@@ -29,6 +29,10 @@ function cacheEls() {
   els.composerForm = document.getElementById('composer-form');
   els.composerInput = document.getElementById('composer-input');
   els.sendBtn = document.getElementById('send-btn');
+  els.micBtn = document.getElementById('mic-btn');
+  els.voiceStatus = document.getElementById('voice-status');
+  els.speakRepliesInput = document.getElementById('speak-replies-input');
+  els.voiceSpeedSelect = document.getElementById('voice-speed-select');
 }
 
 function init() {
@@ -36,6 +40,7 @@ function init() {
   renderScenarioGrid();
   renderHomeStats();
   wireEvents();
+  els.micBtn.hidden = !Voice.supportsRecognition;
   refreshApiKeyBanner();
   showView('home');
 }
@@ -45,7 +50,12 @@ function wireEvents() {
   els.apiKeyBannerBtn.addEventListener('click', openSettings);
   els.settingsCancelBtn.addEventListener('click', closeSettings);
   els.settingsForm.addEventListener('submit', onSettingsSubmit);
-  els.backBtn.addEventListener('click', () => showView('home'));
+  els.backBtn.addEventListener('click', () => {
+    Voice.stopListening();
+    Voice.cancelSpeech();
+    showView('home');
+  });
+  els.micBtn.addEventListener('click', onMicClick);
   els.composerForm.addEventListener('submit', onComposerSubmit);
 
   els.composerInput.addEventListener('keydown', (e) => {
@@ -100,6 +110,8 @@ function openSettings() {
   els.apiKeyInput.value = settings.apiKey;
   els.difficultySelect.value = settings.difficulty;
   els.dialectSelect.value = settings.dialect;
+  els.speakRepliesInput.checked = settings.speakReplies;
+  els.voiceSpeedSelect.value = settings.voiceSpeed;
   els.settingsDialog.showModal();
 }
 
@@ -116,6 +128,8 @@ function onSettingsSubmit(e) {
     apiKey: newKey,
     difficulty: els.difficultySelect.value,
     dialect: els.dialectSelect.value,
+    speakReplies: els.speakRepliesInput.checked,
+    voiceSpeed: els.voiceSpeedSelect.value,
   });
   els.settingsDialog.close();
   refreshApiKeyBanner();
@@ -138,6 +152,7 @@ function startConversation(scenarioId) {
   els.convDifficultyBadge.textContent = difficultyLabel(settings.difficulty);
   els.messageList.innerHTML = '';
   els.composerInput.value = '';
+  setVoiceStatus('');
   showView('conversation');
   els.composerInput.focus();
 }
@@ -152,6 +167,9 @@ async function onComposerSubmit(e) {
 
   const text = els.composerInput.value.trim();
   if (!text || !activeConversation) return;
+
+  Voice.cancelSpeech();
+  setVoiceStatus('');
 
   const settings = Storage.getSettings();
   const scenario = Scenarios.SCENARIOS.find((s) => s.id === activeConversation.scenario);
@@ -180,6 +198,7 @@ async function onComposerSubmit(e) {
     };
     activeConversation = Storage.appendMessage(activeConversation.id, aiMessage);
     appendMessageToDom(aiMessage);
+    if (settings.speakReplies) Voice.speak(aiMessage.text, settings.dialect, settings.voiceSpeed);
   } catch (err) {
     typingEl.remove();
     appendErrorToDom(err.message || 'Ocurrió un error inesperado.');
@@ -192,7 +211,59 @@ async function onComposerSubmit(e) {
 function setSending(value) {
   sending = value;
   els.sendBtn.disabled = value;
+  els.micBtn.disabled = value;
   els.composerInput.disabled = value;
+}
+
+// ---------- Voice ----------
+
+function setVoiceStatus(text) {
+  els.voiceStatus.textContent = text;
+  els.voiceStatus.hidden = !text;
+}
+
+function voiceErrorText(code) {
+  return {
+    'not-allowed': 'El micrófono está bloqueado. En Android: Ajustes → Apps → Chrome → Permisos → Micrófono, y permítelo también para este sitio en Chrome.',
+    'service-not-allowed': 'El micrófono está bloqueado. En Android: Ajustes → Apps → Chrome → Permisos → Micrófono, y permítelo también para este sitio en Chrome.',
+    'no-speech': 'No te escuché. Toca el micrófono e inténtalo otra vez.',
+    'audio-capture': 'No se detecta ningún micrófono.',
+    'network': 'El reconocimiento de voz necesita conexión a internet.',
+  }[code] || `Error de voz (${code}).`;
+}
+
+function onMicClick() {
+  if (Voice.isListening()) {
+    Voice.stopListening();
+    return;
+  }
+  if (sending || !activeConversation) return;
+
+  Voice.cancelSpeech(); // don't let the mic hear the app's own voice
+  const settings = Storage.getSettings();
+  els.composerInput.value = '';
+  let errored = false;
+
+  els.micBtn.classList.add('mic-btn--listening');
+  setVoiceStatus('🎙️ Escuchando… habla ahora');
+
+  Voice.startListening(settings.dialect, {
+    onInterim: (text) => { els.composerInput.value = text; },
+    onFinal: (text) => {
+      els.composerInput.value = text;
+      els.composerForm.requestSubmit();
+    },
+    onError: (code) => {
+      if (code === 'aborted') return;
+      errored = true;
+      setVoiceStatus(voiceErrorText(code));
+    },
+    onEnd: (heard) => {
+      els.micBtn.classList.remove('mic-btn--listening');
+      if (!heard && !errored) setVoiceStatus('No te escuché. Toca el micrófono e inténtalo otra vez.');
+      else if (heard) setVoiceStatus('');
+    },
+  });
 }
 
 function appendMessageToDom(message) {
@@ -202,7 +273,25 @@ function appendMessageToDom(message) {
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.textContent = message.text;
-  wrap.appendChild(bubble);
+
+  if (message.speaker === 'ai' && Voice.supportsSynthesis) {
+    const row = document.createElement('div');
+    row.className = 'bubble-row';
+    const replay = document.createElement('button');
+    replay.type = 'button';
+    replay.className = 'speak-btn';
+    replay.textContent = '🔊';
+    replay.title = 'Escuchar de nuevo';
+    replay.setAttribute('aria-label', 'Escuchar de nuevo');
+    replay.addEventListener('click', () => {
+      const current = Storage.getSettings();
+      Voice.speak(message.text, current.dialect, current.voiceSpeed);
+    });
+    row.append(bubble, replay);
+    wrap.appendChild(row);
+  } else {
+    wrap.appendChild(bubble);
+  }
 
   if (message.speaker === 'ai' && message.translation) {
     const autoOpen = activeConversation && activeConversation.difficulty === 'beginner';

@@ -58,6 +58,9 @@
 
 * { box-sizing: border-box; }
 
+/* Author display rules (flex/grid) would otherwise defeat the hidden attribute */
+[hidden] { display: none !important; }
+
 html, body {
   height: 100%;
 }
@@ -550,3 +553,70 @@ dialog::backdrop {
   border-color: var(--accent);
   color: var(--accent-ink);
 }
+
+/* ---------- Voice ---------- */
+
+.voice-status {
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  background: var(--bg-well);
+}
+
+.mic-btn {
+  background: var(--bg-well);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  font-size: 1.15rem;
+  cursor: pointer;
+  flex: none;
+}
+
+.mic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.mic-btn:focus-visible, .speak-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.mic-btn--listening {
+  background: var(--bad-soft);
+  border-color: var(--bad);
+  animation: mic-pulse 1.4s infinite ease-in-out;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 5px var(--bad-soft); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-btn--listening { animation: none; }
+}
+
+.bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.speak-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  opacity: 0.7;
+  flex: none;
+}
+
+.speak-btn:hover { opacity: 1; background: var(--bg-well); }
+
+.field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.field--check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.field--check label { font-size: 0.88rem; color: var(--text); }

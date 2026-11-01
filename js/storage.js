@@ -12,6 +12,8 @@ const DEFAULT_SETTINGS = {
   difficulty: 'intermediate', // beginner | intermediate | advanced
   dialect: 'es-ES', // es-ES | es-MX
   model: '', // last Gemini model that worked for this key; '' = auto-detect
+  speakReplies: true, // read AI replies aloud
+  voiceSpeed: 'slow', // slow | normal
 };
 
 function getSettings() {
